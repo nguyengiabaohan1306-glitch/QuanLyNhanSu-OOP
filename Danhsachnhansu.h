@@ -1,15 +1,16 @@
 #pragma once
 #include "NhanVien.h"
-#include <memory>
 
-// Quan ly danh sach nhan su: doi tuong tu giai phong bo nho nho unique_ptr
 class DanhSachNhanSu {
 private:
-    vector<unique_ptr<NhanVien>> ds;
+    vector<NhanVien*> ds;
     bool daThayDoi;                    // true neu co thay doi chua luu ra tep
 
 public:
     DanhSachNhanSu();
+    ~DanhSachNhanSu();                                        // giải phóng bộ nhớ
+    DanhSachNhanSu(const DanhSachNhanSu&) = delete;           // cấm sao chép
+    DanhSachNhanSu& operator=(const DanhSachNhanSu&) = delete;
 
     // ----- Thong tin chung -----
     size_t SoLuong() const;
@@ -18,8 +19,8 @@ public:
     void DanhDauThayDoi();
 
     // ----- Them / xoa / truy cap -----
-    void Them(unique_ptr<NhanVien> nv);
-    bool Xoa(const string& ma);                    // unique_ptr tu delete
+    void Them(NhanVien* nv);
+    bool Xoa(const string& ma);                   
     bool TonTai(const string& ma) const;
     NhanVien* TimTheoMa(const string& ma) const;
 
