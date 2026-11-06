@@ -198,9 +198,9 @@ void DanhSachNhanSu::InThongKe() const {
     cout << setw(26) << "Tong quy luong" << ": " << DinhDangTien(tongTatCa) << " VND\n";
     cout << setw(26) << "Luong trung binh chung" << ": " << DinhDangTien(tongTatCa / ds.size()) << " VND\n";
     cout << setw(26) << "Luong cao nhat" << ": " << DinhDangTien(cao->TinhLuong()) << " VND ("
-        << cao->getMaNV() << " - " << cao->getHoTen() << ")\n";
+         << cao->getMaNV() << " - " << cao->getHoTen() << ")\n";
     cout << setw(26) << "Luong thap nhat" << ": " << DinhDangTien(thap->TinhLuong()) << " VND ("
-        << thap->getMaNV() << " - " << thap->getHoTen() << ")\n";
+         << thap->getMaNV() << " - " << thap->getHoTen() << ")\n";
     cout << right;
 }
 
@@ -268,8 +268,8 @@ void DanhSachNhanSu::InBang(const vector<const NhanVien*>& danhSach, const strin
     }
 
     // Do rong noi dung tung cot: STT | Ma NV | Ho Ten | Chuc Vu | Tien Luong
-    const int w[6] = { 5, 10, 25, 12, 16, 15 };
-    const int soCot = 6;
+    const int w[5] = { 5, 10, 25, 16, 15 };
+    const int soCot = 5;
 
     int tongRong = 1;
     for (int i = 0; i < soCot; i++) tongRong += w[i] + 3;
@@ -294,11 +294,9 @@ void DanhSachNhanSu::InBang(const vector<const NhanVien*>& danhSach, const strin
     DoiMau(MAU_VANG);  cout << " | ";
     DoiMau(MAU_TRANG); cout << left << setw(w[2]) << "Ho Va Ten";
     DoiMau(MAU_VANG);  cout << " | ";
-    DoiMau(MAU_TRANG); cout << left << setw(w[3]) << "Ngay Sinh";
+    DoiMau(MAU_TRANG); cout << left << setw(w[3]) << "Chuc Vu";
     DoiMau(MAU_VANG);  cout << " | ";
-    DoiMau(MAU_TRANG); cout << left << setw(w[4]) << "Chuc Vu";
-    DoiMau(MAU_VANG);  cout << " | ";
-    DoiMau(MAU_TRANG); cout << right << setw(w[5]) << "Tien Luong";
+    DoiMau(MAU_TRANG); cout << right << setw(w[4]) << "Tien Luong";
     DoiMau(MAU_VANG);  cout << " |" << endl;
     KeDuongNgang(w, soCot);
 
@@ -321,11 +319,9 @@ void DanhSachNhanSu::InBang(const vector<const NhanVien*>& danhSach, const strin
             DoiMau(MAU_VANG); cout << " | ";
             DoiMau(mauCV);    cout << left << setw(w[2]) << dongTen[k];
             DoiMau(MAU_VANG); cout << " | ";
-            DoiMau(mauCV);    cout << left << setw(w[3]) << (dongDau ? danhSach[i]->getNgaySinh() : "");
+            DoiMau(mauCV);    cout << left << setw(w[3]) << (dongDau ? tenCV : "");
             DoiMau(MAU_VANG); cout << " | ";
-            DoiMau(mauCV);    cout << left << setw(w[4]) << (dongDau ? tenCV : "");
-            DoiMau(MAU_VANG); cout << " | ";
-            DoiMau(mauCV);    cout << right << setw(w[5]) << (dongDau ? luong : "");
+            DoiMau(mauCV);    cout << right << setw(w[4]) << (dongDau ? luong : "");
             DoiMau(MAU_VANG); cout << " |" << endl;
         }
 
