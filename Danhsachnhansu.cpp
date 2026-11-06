@@ -39,18 +39,30 @@ namespace {
     }
 
     // Nha may (Factory): tao doi tuong dung loai theo ma chuc vu trong tep
-    unique_ptr<NhanVien> TaoTheoLoai(int loai) {
+    // Nguoi goi chiu trach nhiem delete con tro tra ve
+    NhanVien* TaoTheoLoai(int loai) {
         switch (loai) {
-        case CV_VAN_PHONG: return unique_ptr<NhanVien>(new NhanVienVanPhong());
-        case CV_SAN_XUAT:  return unique_ptr<NhanVien>(new NhanVienSanXuat());
-        case CV_QUAN_LY:   return unique_ptr<NhanVien>(new QuanLy());
+        case CV_VAN_PHONG: return new NhanVienVanPhong();
+        case CV_SAN_XUAT:  return new NhanVienSanXuat();
+        case CV_QUAN_LY:   return new QuanLy();
         }
         throw LoiDuLieu("Ma chuc vu khong hop le: " + to_string(loai));
+    }
+
+    // Giai phong toan bo doi tuong trong mot vector con tro roi lam rong vector
+    void GiaiPhongHet(vector<NhanVien*>& v) {
+        for (size_t i = 0; i < v.size(); i++) delete v[i];
+        v.clear();
     }
 }
 
 // ===================== THONG TIN CHUNG =====================
 DanhSachNhanSu::DanhSachNhanSu() : daThayDoi(false) {}
+
+// Ham huy: danh sach la chu so huu nen phai tu delete tung nhan vien
+DanhSachNhanSu::~DanhSachNhanSu() {
+    GiaiPhongHet(ds);
+}
 
 size_t DanhSachNhanSu::SoLuong() const { return ds.size(); }
 bool DanhSachNhanSu::Rong() const { return ds.empty(); }
@@ -58,15 +70,17 @@ bool DanhSachNhanSu::DaThayDoi() const { return daThayDoi; }
 void DanhSachNhanSu::DanhDauThayDoi() { daThayDoi = true; }
 
 // ===================== THEM / XOA / TRUY CAP =====================
-void DanhSachNhanSu::Them(unique_ptr<NhanVien> nv) {
-    ds.push_back(move(nv));
+// Danh sach nhan quyen so huu con tro nv
+void DanhSachNhanSu::Them(NhanVien* nv) {
+    ds.push_back(nv);
     daThayDoi = true;
 }
 
 bool DanhSachNhanSu::Xoa(const string& ma) {
     for (size_t i = 0; i < ds.size(); i++) {
         if (ds[i]->getMaNV() == ma) {
-            ds.erase(ds.begin() + i);          // unique_ptr tu goi delete -> ham huy ao
+            delete ds[i];                      // delete TRUOC khi erase (ham huy ao)
+            ds.erase(ds.begin() + i);
             daThayDoi = true;
             return true;
         }
@@ -81,7 +95,7 @@ bool DanhSachNhanSu::TonTai(const string& ma) const {
 NhanVien* DanhSachNhanSu::TimTheoMa(const string& ma) const {
     for (size_t i = 0; i < ds.size(); i++) {
         if (ds[i]->getMaNV() == ma) {
-            return ds[i].get();
+            return ds[i];
         }
     }
     return nullptr;
@@ -90,14 +104,14 @@ NhanVien* DanhSachNhanSu::TimTheoMa(const string& ma) const {
 // ===================== TRUY VAN =====================
 vector<const NhanVien*> DanhSachNhanSu::TatCa() const {
     vector<const NhanVien*> kq;
-    for (size_t i = 0; i < ds.size(); i++) kq.push_back(ds[i].get());
+    for (size_t i = 0; i < ds.size(); i++) kq.push_back(ds[i]);
     return kq;
 }
 
 vector<const NhanVien*> DanhSachNhanSu::LocTheoChucVu(int chucVu) const {
     vector<const NhanVien*> kq;
     for (size_t i = 0; i < ds.size(); i++) {
-        if (ds[i]->LayChucVu() == chucVu) kq.push_back(ds[i].get());
+        if (ds[i]->LayChucVu() == chucVu) kq.push_back(ds[i]);
     }
     return kq;
 }
@@ -108,7 +122,7 @@ vector<const NhanVien*> DanhSachNhanSu::TimTheoTen(const string& tuKhoa) const {
     string k = VietThuong(Trim(tuKhoa));
     if (k.empty()) return kq;
     for (size_t i = 0; i < ds.size(); i++) {
-        if (VietThuong(ds[i]->getHoTen()).find(k) != string::npos) kq.push_back(ds[i].get());
+        if (VietThuong(ds[i]->getHoTen()).find(k) != string::npos) kq.push_back(ds[i]);
     }
     return kq;
 }
@@ -117,7 +131,7 @@ vector<const NhanVien*> DanhSachNhanSu::LocTheoKhoangLuong(double tu, double den
     vector<const NhanVien*> kq;
     for (size_t i = 0; i < ds.size(); i++) {
         double l = ds[i]->TinhLuong();
-        if (l >= tu && l <= den) kq.push_back(ds[i].get());
+        if (l >= tu && l <= den) kq.push_back(ds[i]);
     }
     return kq;
 }
@@ -125,7 +139,7 @@ vector<const NhanVien*> DanhSachNhanSu::LocTheoKhoangLuong(double tu, double den
 vector<const NhanVien*> DanhSachNhanSu::SinhNhatTrongThang(int thang) const {
     vector<const NhanVien*> kq;
     for (size_t i = 0; i < ds.size(); i++) {
-        if (ds[i]->ThangSinh() == thang) kq.push_back(ds[i].get());
+        if (ds[i]->ThangSinh() == thang) kq.push_back(ds[i]);
     }
     return kq;
 }
@@ -134,7 +148,7 @@ vector<const NhanVien*> DanhSachNhanSu::SinhNhatTrongThang(int thang) const {
 void DanhSachNhanSu::SapXepTheoLuong(bool tangDan) {
     // Dung toan tu < cua NhanVien (so sanh theo luong); stable_sort giu thu tu khi bang luong
     stable_sort(ds.begin(), ds.end(),
-        [tangDan](const unique_ptr<NhanVien>& a, const unique_ptr<NhanVien>& b) {
+        [tangDan](const NhanVien* a, const NhanVien* b) {
             return tangDan ? (*a < *b) : (*b < *a);
         });
     daThayDoi = true;
@@ -149,8 +163,8 @@ void DanhSachNhanSu::InThongKe() const {
     int soLuong[4] = { 0, 0, 0, 0 };
     double tong[4] = { 0, 0, 0, 0 };
     double tongTatCa = 0;
-    const NhanVien* cao = ds[0].get();
-    const NhanVien* thap = ds[0].get();
+    const NhanVien* cao = ds[0];
+    const NhanVien* thap = ds[0];
 
     for (size_t i = 0; i < ds.size(); i++) {
         int cv = ds[i]->LayChucVu();
@@ -158,8 +172,8 @@ void DanhSachNhanSu::InThongKe() const {
         soLuong[cv]++;
         tong[cv] += luong;
         tongTatCa += luong;
-        if (luong > cao->TinhLuong()) cao = ds[i].get();
-        if (luong < thap->TinhLuong()) thap = ds[i].get();
+        if (luong > cao->TinhLuong()) cao = ds[i];
+        if (luong < thap->TinhLuong()) thap = ds[i];
     }
 
     const int w[4] = { 20, 10, 18, 18 };
@@ -198,9 +212,9 @@ void DanhSachNhanSu::InThongKe() const {
     cout << setw(26) << "Tong quy luong" << ": " << DinhDangTien(tongTatCa) << " VND\n";
     cout << setw(26) << "Luong trung binh chung" << ": " << DinhDangTien(tongTatCa / ds.size()) << " VND\n";
     cout << setw(26) << "Luong cao nhat" << ": " << DinhDangTien(cao->TinhLuong()) << " VND ("
-         << cao->getMaNV() << " - " << cao->getHoTen() << ")\n";
+        << cao->getMaNV() << " - " << cao->getHoTen() << ")\n";
     cout << setw(26) << "Luong thap nhat" << ": " << DinhDangTien(thap->TinhLuong()) << " VND ("
-         << thap->getMaNV() << " - " << thap->getHoTen() << ")\n";
+        << thap->getMaNV() << " - " << thap->getHoTen() << ")\n";
     cout << right;
 }
 
@@ -228,34 +242,43 @@ int DanhSachNhanSu::DocTep(const string& duongDan, int& soDongLoi) {
         throw LoiDuLieu("Khong mo duoc tep: " + duongDan);
     }
 
-    vector<unique_ptr<NhanVien>> moi;
+    vector<NhanVien*> moi;                       // danh sach tam, chi gan vao ds khi doc xong
     soDongLoi = 0;
     int soDong = 0;
     string dong;
 
-    while (getline(f, dong)) {
-        soDong++;
-        dong = Trim(dong);
-        if (dong.empty() || dong[0] == '#') continue;
+    try {
+        while (getline(f, dong)) {
+            soDong++;
+            dong = Trim(dong);
+            if (dong.empty() || dong[0] == '#') continue;
 
-        try {
-            vector<string> cot = TachChuoi(dong, CauHinh::DAU_PHAN_CACH);
-            unique_ptr<NhanVien> nv = TaoTheoLoai(DocSoNguyen(cot[0], "loai"));
-            nv->NapDuLieu(cot);
-            for (size_t i = 0; i < moi.size(); i++) {
-                if (moi[i]->getMaNV() == nv->getMaNV()) {
-                    throw LoiDuLieu("Trung ma nhan vien '" + nv->getMaNV() + "'");
+            NhanVien* nv = nullptr;
+            try {
+                vector<string> cot = TachChuoi(dong, CauHinh::DAU_PHAN_CACH);
+                nv = TaoTheoLoai(DocSoNguyen(cot[0], "loai"));
+                nv->NapDuLieu(cot);
+                for (size_t i = 0; i < moi.size(); i++) {
+                    if (moi[i]->getMaNV() == nv->getMaNV()) {
+                        throw LoiDuLieu("Trung ma nhan vien '" + nv->getMaNV() + "'");
+                    }
                 }
+                moi.push_back(nv);
             }
-            moi.push_back(move(nv));
-        }
-        catch (const LoiDuLieu& e) {
-            soDongLoi++;
-            InMau("  Dong " + to_string(soDong) + ": " + e.what() + " -> bo qua\n", MAU_DO);
+            catch (const LoiDuLieu& e) {
+                delete nv;                       // nv co the la nullptr, delete van an toan
+                soDongLoi++;
+                InMau("  Dong " + to_string(soDong) + ": " + e.what() + " -> bo qua\n", MAU_DO);
+            }
         }
     }
+    catch (...) {                                // loi bat ngo (het bo nho...): tranh ro ri
+        GiaiPhongHet(moi);
+        throw;
+    }
 
-    ds = move(moi);                              // thay the khi da doc xong
+    GiaiPhongHet(ds);                            // xoa danh sach cu truoc khi thay the
+    ds = moi;
     daThayDoi = false;
     return (int)ds.size();
 }
