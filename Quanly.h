@@ -6,6 +6,7 @@ private:
     double luongCoBan;
     double heSoTrachNhiem;
 
+    double TinhLuongTrachNhiem() const;
 public:
     QuanLy();
     QuanLy(string ma, string ten, string ns, string dc, double luongCB, double heSo);
@@ -14,8 +15,6 @@ public:
     void setLuongCoBan(double luongCB);
     double getHeSoTrachNhiem() const;
     void setHeSoTrachNhiem(double heSo);
-
-    double TinhLuongTrachNhiem() const;
 
     double TinhLuong() const override;
     void HienThiThongTin() const override;
