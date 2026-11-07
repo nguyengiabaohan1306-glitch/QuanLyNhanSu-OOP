@@ -9,6 +9,8 @@ private:
     double donGiaSanPham;
 
     double TinhLuongSanPham() const;
+    double TinhThuongNangSuat() const;     
+    double TiLeDatChuan() const;// phan tram
 
 public:
     NhanVienSanXuat();
@@ -30,9 +32,6 @@ public:
     void setChiTieuSanPham(int chiTieu);
     void setSoSanPhamDatChuan(int datChuan);
     void setDonGiaSanPham(double donGia);
-
-    double TinhThuongNangSuat() const;     // 1 cho duy nhat tinh thuong
-    double TiLeDatChuan() const;           // phan tram
 
     double TinhLuong() const override;
     void HienThiThongTin() const override;
